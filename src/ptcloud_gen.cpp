@@ -13,7 +13,6 @@ HPS3D_HandleTypeDef handle;
 AsyncIObserver_t My_Observer;
 
 ros::Publisher ptcloud_pub;//Global variable, because the observer callback function needs to be used
-MeasureDataTypeDef frame;
 
 //The observer callback function
 void *User_Func(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
@@ -22,7 +21,7 @@ void *User_Func(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	measureData.points.resize(MAX_PIX_NUM);
 
 	ros::Time scan_time = ros::Time::now();
-	//populate the LaserScan message
+	//populate the PointCloud message
 	measureData.header.stamp = scan_time;
 	measureData.header.frame_id = "hps";
 
@@ -67,23 +66,6 @@ void *User_Func(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	}
 }
 
-//check ctrl+c signal
-void signal_handler(int signo)
-{
-    if(HPS3D_RemoveDevice(&handle) != RET_OK)
-    {
-	printf("HPS3D_RemoveDevice faild\n");
-    }
-    else
-    {	
-        printf("HPS3D_RemoveDevice succeed\n");
-    }
-	HPS3D_DisConnect(&handle);
-	HPS3D_RemoveObserver(&My_Observer);
-    exit(0);
-}
-
-
 //printf log callback function
 void my_printf(uint8_t *str)
 {
@@ -103,16 +85,6 @@ int main(int argc, char **argv)
 	uint32_t dev_cnt = 0;
 	RET_StatusTypeDef ret = RET_OK;
 
-	//Install the signal
-	if(signal(SIGINT,signal_handler) == SIG_ERR)
-	{
-		printf("sigint error");
-	}
-	if(signal(SIGTSTP,signal_handler) == SIG_ERR)
-	{
-		printf("sigint error");
-	}
-
 	//Create a topic
 	ptcloud_pub = n.advertise<sensor_msgs::PointCloud>("ptcloud", 1000);	
 
@@ -122,9 +94,9 @@ int main(int argc, char **argv)
 
 	//Lists the optional devices
 	dev_cnt = HPS3D_GetDeviceList((uint8_t *)"/dev/",(uint8_t *)"ttyACM",fileName);
-	handle.DeviceName = fileName[0];
-	printf("%s\n", handle.DeviceName);
 
+	printf("%s\n", fileName[0]);
+	handle.DeviceName = fileName[0];
 
 	//Device Connection
 	ret = HPS3D_Connect(&handle);
@@ -176,6 +148,17 @@ int main(int argc, char **argv)
 	{		
 
 	}
+
+	if(HPS3D_RemoveDevice(&handle) != RET_OK)
+    {
+		printf("HPS3D_RemoveDevice faild\n");
+    }
+    else
+    {	
+        printf("HPS3D_RemoveDevice succeed\n");
+    }
+	HPS3D_DisConnect(&handle);
+	HPS3D_RemoveObserver(&My_Observer);
 	return 0;
 }
 

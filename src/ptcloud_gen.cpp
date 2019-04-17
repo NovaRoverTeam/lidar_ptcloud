@@ -62,6 +62,65 @@ void *User_Func(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	}
 }
 
+RET_StatusTypeDef lidar_init(uint8_t *filename, HPS3D_HandleTypeDef *handle, AsyncIObserver_t *observer){
+	RET_StatusTypeDef ret = RET_OK;
+	handle->DeviceName = filename;
+
+	//Device Connection
+	ret = HPS3D_Connect(handle);
+	if(ret != RET_OK)
+	{
+		printf("Device open failed！ret = %d\n",ret);
+	}
+	
+	//Point Data Setting
+	HPS3D_SetOpticalEnable(handle, true);
+	
+	//Device init
+	ret = HPS3D_ConfigInit(handle);
+	if(RET_OK != ret)
+	{
+		printf("Initialization failed:%d\n", ret);
+	} else {
+		printf("Initialization succeed with DeviceAddr = %d\n", handle->DeviceAddr);
+	}
+	
+	//Observer callback function and initialization
+	observer->AsyncEvent = ISubject_Event_DataRecvd;
+	observer->NotifyEnable = true;
+	observer->ObserverID = 0;
+	observer->RetPacketType = NULL_PACKET;
+
+	handle->OutputPacketType = PACKET_FULL;
+	HPS3D_SetPacketType(handle);
+
+	//Add observer one
+	HPS3D_AddObserver(&User_Func, handle, observer);		
+
+	if(ret != RET_OK)
+	{
+		//Remove device and disconnect
+		HPS3D_RemoveDevice(handle);
+		printf("Initialization failed, Remove device\n");
+	}
+
+	//Set running mode
+	handle->SyncMode = ASYNC;
+	handle->RunMode = RUN_CONTINUOUS;
+	HPS3D_SetRunMode(handle);
+
+	return ret;
+}
+
+void lidar_close(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *observer){
+	if(HPS3D_RemoveDevice(handle) != RET_OK){
+		printf("HPS3D_RemoveDevice failed\n");
+	}	else {	
+		printf("HPS3D_RemoveDevice succeed\n");
+	}
+	HPS3D_DisConnect(handle);
+	HPS3D_RemoveObserver(observer);
+}
 //printf log callback function
 void my_printf(uint8_t *str)
 {
@@ -81,6 +140,7 @@ int main(int argc, char **argv)
 	uint32_t dev_cnt = 0;
 	RET_StatusTypeDef ret = RET_OK;
 	HPS3D_HandleTypeDef handle;
+	AsyncIObserver_t My_Observer;
 
 	//Create a topic
 	ptcloud_pub = n.advertise<sensor_msgs::PointCloud>("ptcloud", 1000);	
@@ -93,70 +153,12 @@ int main(int argc, char **argv)
 	//Lists the optional devices
 	dev_cnt = HPS3D_GetDeviceList((uint8_t *)"/dev/",(uint8_t *)"ttyACM",fileName);
 	printf("%s\n", fileName[0]);
-	handle.DeviceName = fileName[0];
-
-	//Device Connection
-	ret = HPS3D_Connect(&handle);
-	if(ret != RET_OK)
-	{
-		printf("Device open failed！ret = %d\n",ret);
-		return 1;
-	}
 	
-	//Point Data Setting
-	HPS3D_SetOpticalEnable(&handle, true);
-	
+	lidar_init(fileName[0], &handle, &My_Observer);
 
-	//Device init
-	ret = HPS3D_ConfigInit(&handle);
-	if(RET_OK != ret)
-	{
-		printf("Initialization failed:%d\n", ret);
-		return 1;
-	}
-	printf("Initialization succeed with DeviceAddr = %d\n", handle.DeviceAddr);
+	while(ros::ok());
 
-	//Observer callback function and initialization
-	AsyncIObserver_t My_Observer;
-	My_Observer.AsyncEvent = ISubject_Event_DataRecvd;
-	My_Observer.NotifyEnable = true;
-	My_Observer.ObserverID = 0;
-	My_Observer.RetPacketType = NULL_PACKET;
-
-	handle.OutputPacketType = PACKET_FULL;
-	HPS3D_SetPacketType(&handle);
-
-	//Add observer one
-	HPS3D_AddObserver(&User_Func, &handle, &My_Observer);		
-
-	if(ret != RET_OK)
-	{
-		//Remove device and disconnect
-		HPS3D_RemoveDevice(&handle);
-		printf("Initialization failed, Remove device\n");
-		return 1;
-	}
-
-	//Set running mode
-	handle.SyncMode = ASYNC;
-	handle.RunMode = RUN_CONTINUOUS;
-	HPS3D_SetRunMode(&handle);
-
-	while(ros::ok())
-	{		
-
-	}
-
-	if(HPS3D_RemoveDevice(&handle) != RET_OK)
-    {
-		printf("HPS3D_RemoveDevice faild\n");
-    }
-    else
-    {	
-        printf("HPS3D_RemoveDevice succeed\n");
-    }
-	HPS3D_DisConnect(&handle);
-	HPS3D_RemoveObserver(&My_Observer);
+	lidar_close(&handle, &My_Observer);
 	return 0;
 }
 

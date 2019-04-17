@@ -7,10 +7,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
-
-HPS3D_HandleTypeDef handle;
-AsyncIObserver_t My_Observer;
 
 ros::Publisher ptcloud_pub;//Global variable, because the observer callback function needs to be used
 
@@ -84,6 +80,7 @@ int main(int argc, char **argv)
 	uint8_t fileName[10][20];
 	uint32_t dev_cnt = 0;
 	RET_StatusTypeDef ret = RET_OK;
+	HPS3D_HandleTypeDef handle;
 
 	//Create a topic
 	ptcloud_pub = n.advertise<sensor_msgs::PointCloud>("ptcloud", 1000);	
@@ -91,10 +88,10 @@ int main(int argc, char **argv)
 	//set debug enable and install printf log callback function
 	HPS3D_SetDebugEnable(true);
 	HPS3D_SetDebugFunc(&my_printf);
+	HPS3D_SetPointCloudEn(true);
 
 	//Lists the optional devices
 	dev_cnt = HPS3D_GetDeviceList((uint8_t *)"/dev/",(uint8_t *)"ttyACM",fileName);
-
 	printf("%s\n", fileName[0]);
 	handle.DeviceName = fileName[0];
 
@@ -108,7 +105,7 @@ int main(int argc, char **argv)
 	
 	//Point Data Setting
 	HPS3D_SetOpticalEnable(&handle, true);
-	HPS3D_SetPointCloudEn(true);
+	
 
 	//Device init
 	ret = HPS3D_ConfigInit(&handle);
@@ -117,9 +114,10 @@ int main(int argc, char **argv)
 		printf("Initialization failed:%d\n", ret);
 		return 1;
 	}
-	printf("Initialization succeed\n");
+	printf("Initialization succeed with DeviceAddr = %d\n", handle.DeviceAddr);
 
 	//Observer callback function and initialization
+	AsyncIObserver_t My_Observer;
 	My_Observer.AsyncEvent = ISubject_Event_DataRecvd;
 	My_Observer.NotifyEnable = true;
 	My_Observer.ObserverID = 0;

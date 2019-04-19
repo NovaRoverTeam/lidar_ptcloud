@@ -1,5 +1,4 @@
 #include "ros/ros.h"//ros
-#include "std_msgs/String.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "../include/api.h"//api interface
 #include <sstream>
@@ -126,7 +125,7 @@ int main(int argc, char **argv)
 		printf("Can't Connect!!\n");
 		return 0;
 	} else {
-		printf("#Connected Devices: %d including\n",dev_cnt);
+		printf("Connected %d Device(s) including\n",dev_cnt);
 	}
 	
 	//set debug enable and install printf log callback function
@@ -148,8 +147,6 @@ int main(int argc, char **argv)
 		My_Observer[i].ObserverID = (uint8_t)i; /*观察者ID*/
 	}
 
-
-
 	//Add observers
 	HPS3D_AddObserver(&Pubulish_cb,handle,My_Observer);
 
@@ -159,6 +156,7 @@ int main(int argc, char **argv)
 		HPS3D_SetRunMode(&handle[i]);
 	}
 
+	printf("Start Streaming...\n");
 	while(ros::ok());
 
 	for (int i = 0; i < dev_cnt; i++){

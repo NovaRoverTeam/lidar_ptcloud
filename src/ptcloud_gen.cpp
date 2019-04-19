@@ -35,8 +35,8 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 					memcpy (&measureData.data[i * measureData.point_step + measureData.fields[1].offset], &event->MeasureData.point_cloud_data[0].point_data[i].y, sizeof (float));
 					memcpy (&measureData.data[i * measureData.point_step + measureData.fields[2].offset], &event->MeasureData.point_cloud_data[0].point_data[i].z, sizeof (float));
 				}
-				if (a==0) ptcloudL_pub.publish(measureData);
-				else if (a==1) ptcloudR_pub.publish(measureData);
+				if (a==0) ptcloudR_pub.publish(measureData);
+				else if (a==1) ptcloudL_pub.publish(measureData);
 				else printf("Error!!");
 				break;
 			// case SIMPLE_DEPTH_PACKET:
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 	measureData.point_step = offset;
 	measureData.row_step   = measureData.point_step * RES_WIDTH;
 	measureData.data.resize(MAX_PIX_NUM * offset);
-	measureData.is_bigendian = false;  // @todo ?
+	measureData.is_bigendian = false;
 	measureData.is_dense     = false;
 
 	//Create a topic
@@ -125,12 +125,16 @@ int main(int argc, char **argv)
 		printf("Can't Connect!!\n");
 		return 0;
 	} else {
-		printf("Connected %d Device(s) including\n",dev_cnt);
+		printf("Connected %d device(s) including\n",dev_cnt);
 	}
 	
 	//set debug enable and install printf log callback function
 	HPS3D_SetDebugEnable(true);
 	HPS3D_SetDebugFunc(&my_printf);
+
+	//Smooth Edges
+	HPS3D_SetEdgeDetectionEnable (true);
+	HPS3D_SetEdgeDetectionValue (1000);
 
 	//Point Data Setting
 	HPS3D_SetPointCloudEn(true);
@@ -142,10 +146,18 @@ int main(int argc, char **argv)
 		HPS3D_SetPacketType(&handle[i], PACKET_FULL);
 		HPS3D_SetDevAddr(&handle[i], (uint8_t)i);
 
-		My_Observer[i].AsyncEvent = ISubject_Event_DataRecvd ; /*异步通知事件为数据接收*/
-		My_Observer[i].NotifyEnable = true; /*使能通知事件*/
-		My_Observer[i].ObserverID = (uint8_t)i; /*观察者ID*/
+		My_Observer[i].AsyncEvent = ISubject_Event_DataRecvd ;
+		My_Observer[i].NotifyEnable = true;
+		My_Observer[i].ObserverID = (uint8_t)i;
 	}
+
+	// Setting Distance Filter using Kalman Filter
+	DistanceFilterConfTypeDef set_conf;
+	HPS3D_SetDistanceFilterType(handle, DISTANCE_FILTER_SIMPLE_KALMAN );
+	set_conf.kalman_K = 0.3;
+	set_conf.kalman_threshold = 50;
+	set_conf.num_check = 2;
+	HPS3D_SetSimpleKalman(handle, set_conf);
 
 	//Add observers
 	HPS3D_AddObserver(&Pubulish_cb,handle,My_Observer);

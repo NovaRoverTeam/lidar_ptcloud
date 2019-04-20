@@ -24,36 +24,16 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	{
 		switch(event->RetPacketType)
 		{
-			// case SIMPLE_ROI_PACKET:
-			// 	printf("distance = %d  event->RetPacketType = %d\n",event->MeasureData.simple_roi_data[0].distance_average,event->RetPacketType);
-			// 	break;
-			// case FULL_ROI_PACKET:
-			// 	break;
 			case FULL_DEPTH_PACKET: /*点云数据和深度数据在这里获取*/
 				for(int i = 0; i < MAX_PIX_NUM; i++){
 					memcpy (&measureData.data[i * measureData.point_step + measureData.fields[0].offset], &event->MeasureData.point_cloud_data[0].point_data[i].x, sizeof (float));
 					memcpy (&measureData.data[i * measureData.point_step + measureData.fields[1].offset], &event->MeasureData.point_cloud_data[0].point_data[i].y, sizeof (float));
 					memcpy (&measureData.data[i * measureData.point_step + measureData.fields[2].offset], &event->MeasureData.point_cloud_data[0].point_data[i].z, sizeof (float));
 				}
-				if (a==0) ptcloudR_pub.publish(measureData);
-				else if (a==1) ptcloudL_pub.publish(measureData);
+				if (a==0) ptcloudL_pub.publish(measureData);
+				else if (a==1) ptcloudR_pub.publish(measureData);
 				else printf("Error!!");
 				break;
-			// case SIMPLE_DEPTH_PACKET:
-			// 	printf("distance = %d  event->RetPacketType = %d\n",event->MeasureData.simple_depth_data->distance_average,event->RetPacketType);
-			// 	break;
-			// case OBSTACLE_PACKET:
-			// 	printf("Obstacle ID：%d\n",event->MeasureData.Obstacle_data->Id);
-			// 	if(event->MeasureData.Obstacle_data->Id > 20)
-			// 	{
-			// 		handle->RunMode = RUN_IDLE;
-			// 		HPS3D_SetRunMode(handle);
-			// 	}
-			// 	break;
-			// case NULL_PACKET:
-			// 	printf("null packet\n");
-			// 	//The return packet type is empty
-			// 	break;
 			default:
 				printf("system error!\n");
 				break;
@@ -138,17 +118,18 @@ int main(int argc, char **argv)
 
 	//Point Data Setting
 	HPS3D_SetPointCloudEn(true);
+	HPS3D_SetOpticalEnable(handle, true);
+	HPS3D_SetPacketType(handle, PACKET_FULL);
 
 	for (int i = 0; i < dev_cnt; i++){
 		printf("%s\n",handle[i].DeviceName);
-		
-		HPS3D_SetOpticalEnable(&handle[i], true);
-		HPS3D_SetPacketType(&handle[i], PACKET_FULL);
-		HPS3D_SetDevAddr(&handle[i], (uint8_t)i);
+	
+		uint8_t a = handle[i].DeviceName[strlen(handle[i].DeviceName)-1] % 2;
+		HPS3D_SetDevAddr(&handle[i], a);
 
-		My_Observer[i].AsyncEvent = ISubject_Event_DataRecvd ;
-		My_Observer[i].NotifyEnable = true;
-		My_Observer[i].ObserverID = (uint8_t)i;
+		My_Observer[a].AsyncEvent = ISubject_Event_DataRecvd;
+		My_Observer[a].NotifyEnable = true;
+		My_Observer[a].ObserverID = a;
 	}
 
 	// Setting Distance Filter using Kalman Filter

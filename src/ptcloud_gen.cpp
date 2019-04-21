@@ -41,15 +41,6 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	}
 }
 
-void lidar_close(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *observer){
-	if(HPS3D_RemoveDevice(handle) != RET_OK){
-		printf("HPS3D_RemoveDevice failed\n");
-	}	else {	
-		printf("HPS3D_RemoveDevice succeed\n");
-	}
-	HPS3D_DisConnect(handle);
-	HPS3D_RemoveObserver(observer);
-}
 //printf log callback function
 void my_printf(char *str)
 {

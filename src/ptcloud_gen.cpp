@@ -99,14 +99,15 @@ int main(int argc, char **argv)
 
 	HPS3D_SetMeasurePacketType(DEPTH_DATA_PACKET);
 	
-	dev_cnt = HPS3D_AutoConnectAndInitConfigDevice(handle);
-	if(dev_cnt == 0)
-	{
-		printf("Can't Connect!!\n");
-		return 0;
-	} else {
-		printf("Connected %d device(s) including\n",dev_cnt);
-	}
+	do{
+		dev_cnt = HPS3D_AutoConnectAndInitConfigDevice(handle);
+		if(dev_cnt < DEV_NUM)
+		{
+			printf("Connected to %d device(s) out of %d devices. Reconnecting...\n", dev_cnt, DEV_NUM);
+		}
+	} while (dev_cnt < DEV_NUM)
+	
+	printf("Connected %d device(s) including\n", DEV_NUM);
 	
 	//set debug enable and install printf log callback function
 	HPS3D_SetDebugEnable(true);

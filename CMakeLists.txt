@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  roslaunch
 )
 
 ## System dependencies are found with CMake's conventions
@@ -137,7 +138,10 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_executable(ptcloud_gen src/ptcloud_gen.cpp)
-target_link_libraries(ptcloud_gen ${catkin_LIBRARIES} hps3d64179)
+target_link_libraries(ptcloud_gen ${catkin_LIBRARIES} hps3d641712)
+
+add_executable(ptcloud_merge src/ptcloud_merge.cpp)
+target_link_libraries(ptcloud_merge ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -201,3 +205,5 @@ target_link_libraries(ptcloud_gen ${catkin_LIBRARIES} hps3d64179)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+roslaunch_add_file_check(launch)

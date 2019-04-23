@@ -137,7 +137,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_executable(ptcloud_gen src/ptcloud_gen.cpp)
-target_link_libraries(ptcloud_gen ${catkin_LIBRARIES} hps3d641712)
+target_link_libraries(ptcloud_gen ${catkin_LIBRARIES} hps3d64179)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

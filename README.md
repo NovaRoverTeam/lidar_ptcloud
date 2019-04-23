@@ -11,6 +11,6 @@ sudo ldconfig
 Then plug the LiDARs by the order as instructed on the label on the USB  plug and run the following:
 ```
 roscore
-rosrun lidar_ptcloud ptcloud_gen
+roslaunch lidar_ptcloud lidar.launch
 ```
 This generates a ROS node named `ptcloud_gen` that publishes point cloud data in `sensor_msgs/PointCloud2` format.

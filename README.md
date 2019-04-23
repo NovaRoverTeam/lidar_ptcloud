@@ -13,4 +13,4 @@ Then plug the LiDARs by the order as instructed on the label on the USB  plug an
 roscore
 roslaunch lidar_ptcloud lidar.launch
 ```
-This generates a ROS node named `ptcloud_gen` that publishes point cloud data in `sensor_msgs/PointCloud2` format.
+This generates two ROS nodes named `ptcloud_gen` and `ptcloud_merge`, with the latter publishes a merged point cloud data in `sensor_msgs/PointCloud2` format.

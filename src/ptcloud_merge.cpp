@@ -20,8 +20,8 @@ vector<Pt32> leftPts, rightPts, allPts;
 void rotate(const vector<Pt32>& in, vector<Pt32>& result, double angle){
     result.resize(MAX_PIX_NUM);
     for (int i = 0; i < MAX_PIX_NUM; ++i){
-        result[i].x = sin(angle) * in[i].x + cos(angle) * in[i].z;
-        result[i].y = cos(angle) * in[i].x - sin(angle) * in[i].z;
+        result[i].x = - cos(angle) * in[i].x + sin(angle) * in[i].z;
+        result[i].y = sin(angle) * in[i].x + cos(angle) * in[i].z;
         result[i].z = in[i].y;
     }
 }

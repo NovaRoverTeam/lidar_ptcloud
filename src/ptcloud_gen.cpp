@@ -26,9 +26,9 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 			case FULL_DEPTH_PACKET: /*点云数据和深度数据在这里获取*/
 				for(int i = 0; i < MAX_PIX_NUM; i++){
 					geometry_msgs::Point32 pt;
-					pt.x = event->MeasureData.point_cloud_data[0].point_data[i].x;
-					pt.y = event->MeasureData.point_cloud_data[0].point_data[i].y;
-					pt.z = event->MeasureData.point_cloud_data[0].point_data[i].z;
+					pt.x = event->MeasureData.point_cloud_data[0].point_data[i].x/1000;
+					pt.y = event->MeasureData.point_cloud_data[0].point_data[i].y/1000;
+					pt.z = event->MeasureData.point_cloud_data[0].point_data[i].z/1000;
 					measureData.points[i] = pt;
 				}
 				if (a==0) ptcloudL_pub.publish(measureData);
@@ -50,8 +50,7 @@ void my_printf(char *str)
 
 int main(int argc, char **argv)
 {
-	system("sudo chmod 777 /dev/ttyACM*");
-	
+
 	ros::init(argc, argv, "ptcloud_gen");//ros init
 	ros::NodeHandle n;//Create a node
 
@@ -108,9 +107,9 @@ int main(int argc, char **argv)
 	// Setting Distance Filter using Kalman Filter
 	DistanceFilterConfTypeDef set_conf;
 	HPS3D_SetDistanceFilterType(handle, DISTANCE_FILTER_SIMPLE_KALMAN );
-	set_conf.kalman_K = 0.4;
-	set_conf.kalman_threshold = 400;
-	set_conf.num_check = 2;
+	set_conf.kalman_K = 0.6;
+	set_conf.kalman_threshold = 1000;
+	set_conf.num_check = 10;
 	HPS3D_SetSimpleKalman(handle, set_conf);
 
 	for (int i = 0; i < dev_cnt; i++){

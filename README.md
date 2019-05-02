@@ -8,9 +8,12 @@ This repository contains a .so file (compiled library file) that encapsulates th
 sudo cp libhps3d641712.so /usr/local/lib/
 sudo ldconfig
 ```
-Then plug the LiDARs by the order as instructed on the label on the USB  plug and run the following:
+Then plug the LiDARs by the order as instructed on the label on the USB plug and enable the read/write permission of the lidar
 ```
-roscore
+sudo chmod 777 /dev/ttyACM*
+```
+finally run the following:
+```
 roslaunch lidar_ptcloud lidar.launch
 ```
 This generates two ROS nodes named `ptcloud_gen` and `ptcloud_merge`, with the latter publishes a merged point cloud data in `sensor_msgs/PointCloud2` format.

@@ -17,22 +17,22 @@ bool LReady = false, RReady = false;
 double pan_angle;
 vector<Pt32> leftPts, rightPts, allPts;
 
-void rotateY(const vector<Pt32>& in, vector<Pt32>& result, double angle){
+void rotate(const vector<Pt32>& in, vector<Pt32>& result, double angle){
     result.resize(MAX_PIX_NUM);
     for (int i = 0; i < MAX_PIX_NUM; ++i){
-        result[i].x = cos(angle) * in[i].x - sin(angle) * in[i].z;
-        result[i].y = in[i].y;
-        result[i].z = sin(angle) * in[i].x + cos(angle) * in[i].z;
+        result[i].x = sin(angle) * in[i].x + cos(angle) * in[i].z;
+        result[i].y = cos(angle) * in[i].x - sin(angle) * in[i].z;
+        result[i].z = in[i].y;
     }
 }
 
 void LCallback(const sensor_msgs::PointCloud::ConstPtr& left) {
-    rotateY(left->points, leftPts, -pan_angle);
+    rotate(left->points, leftPts, -pan_angle);
     LReady = true;
 }
 
 void RCallback(const sensor_msgs::PointCloud::ConstPtr& right) {
-    rotateY(right->points, rightPts, pan_angle);
+    rotate(right->points, rightPts, pan_angle);
     RReady = true;
 }
 
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	ros::Subscriber ptcloudL_sub = n.subscribe<sensor_msgs::PointCloud>("/ptcloudL", 1, LCallback);	
 	ros::Subscriber ptcloudR_sub = n.subscribe<sensor_msgs::PointCloud>("/ptcloudR", 1, RCallback);	
 
-	ros::Publisher ptcloud_pub = n.advertise<sensor_msgs::PointCloud2>("/ptcloud", 1);
+	ros::Publisher ptcloud_pub = n.advertise<sensor_msgs::PointCloud2>("/ptcloud_merge", 1);
 
     sensor_msgs::PointCloud2 merged;
 

@@ -50,6 +50,7 @@ void my_printf(char *str)
 
 int main(int argc, char **argv)
 {
+	system("sudo chmod 777 /dev/ttyACM*");
 
 	ros::init(argc, argv, "ptcloud_gen");//ros init
 	ros::NodeHandle n;//Create a node

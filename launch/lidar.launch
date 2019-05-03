@@ -2,7 +2,7 @@
 
   <node name="ptcloud_gen" type="ptcloud_gen" pkg="lidar_ptcloud" output="screen"/>
   <node name="ptcloud_merge" type="ptcloud_merge" pkg="lidar_ptcloud" output="screen">
-    <param name="pan_angle" value="0.6108652381980153"/>
+    <param name="pan_angle" value="0.6981317007977318"/><!-- 40 degrees -->
   </node>
 
 </launch>

@@ -8,7 +8,15 @@ This repository contains a .so file (compiled library file) that encapsulates th
 sudo cp libhps3d641712.so /usr/local/lib/
 sudo ldconfig
 ```
-Then plug the LiDARs by the order as instructed on the label on the USB plug and enable the read/write permission of the lidar
+then build it
+```
+catkin build lidar_ptcloud
+```
+Plug the LiDARs by the order as instructed on the label on the USB plug and check if they are registered as /dev/ttyACM0 (L) and /dev/ttyACM1 (R) by executing this line
+```
+ll /dev/ttyACM*
+```
+then enable the read/write permission of the lidar
 ```
 sudo chmod 777 /dev/ttyACM*
 ```

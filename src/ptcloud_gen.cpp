@@ -23,7 +23,7 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 	{
 		switch(event->RetPacketType)
 		{
-			case FULL_DEPTH_PACKET: /*点云数据和深度数据在这里获取*/
+			case FULL_DEPTH_PACKET:
 				for(int i = 0; i < MAX_PIX_NUM; i++){
 					geometry_msgs::Point32 pt;
 					pt.x = event->MeasureData.point_cloud_data[0].point_data[i].x/1000;
@@ -55,7 +55,6 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "ptcloud_gen");//ros init
 	ros::NodeHandle n;//Create a node
 
-	char fileName[10][20];
 	uint32_t dev_cnt = 0;
 	RET_StatusTypeDef ret = RET_OK;
 	HPS3D_HandleTypeDef handle[DEV_NUM];
@@ -90,20 +89,23 @@ int main(int argc, char **argv)
 	HPS3D_SetPacketType(handle, PACKET_FULL);
 
 	for (int i = 0; i < dev_cnt; i++){
-		printf("%s\n",handle[i].DeviceName);
+		printf("%s\n",(handle+i)->DeviceName);
 	
-		uint8_t a = handle[i].DeviceName[strlen(handle[i].DeviceName)-1] % 2;
+		uint8_t a = (handle+i)->DeviceName[strlen((handle+i)->DeviceName)-1] % 2;
 		printf("%d\n",a);
-		HPS3D_SetDevAddr(&handle[i], a);
-		printf("%d\n",handle[i].DeviceAddr);
+		HPS3D_SetDevAddr(handle+i, a);
+		printf("%d\n",(handle+i)->DeviceAddr);
 		My_Observer[a].AsyncEvent = ISubject_Event_DataRecvd ; /*异步通知事件为数据接收*/
 		My_Observer[a].NotifyEnable = true; /*使能通知事件*/
 		My_Observer[a].ObserverID = a; /*观察者ID*/
 
+		//Add observers
+		HPS3D_AddObserver(&Pubulish_cb,handle+a,My_Observer+a);
+
 	}
 
 	//Add observers
-	HPS3D_AddObserver(&Pubulish_cb,handle,My_Observer);
+	//HPS3D_AddObserver(&Pubulish_cb,handle,My_Observer);
 
 	// Setting Distance Filter using Kalman Filter
 	DistanceFilterConfTypeDef set_conf;

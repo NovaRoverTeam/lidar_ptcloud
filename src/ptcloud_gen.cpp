@@ -26,9 +26,9 @@ void *Pubulish_cb(HPS3D_HandleTypeDef *handle, AsyncIObserver_t *event)
 			case FULL_DEPTH_PACKET:
 				for(int i = 0; i < MAX_PIX_NUM; i++){
 					geometry_msgs::Point32 pt;
-					pt.x = event->MeasureData.point_cloud_data[0].point_data[i].x/1000;
-					pt.y = event->MeasureData.point_cloud_data[0].point_data[i].y/1000;
-					pt.z = event->MeasureData.point_cloud_data[0].point_data[i].z/1000;
+					pt.x = event->MeasureData.point_cloud_data[0].point_data[i].x/1000.0;
+					pt.y = event->MeasureData.point_cloud_data[0].point_data[i].y/1000.0;
+					pt.z = event->MeasureData.point_cloud_data[0].point_data[i].z/1000.0;
 					measureData.points[i] = pt;
 				}
 				if (a==0) ptcloudL_pub.publish(measureData);
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 	ptcloudR_pub = n.advertise<sensor_msgs::PointCloud>("/ptcloudR", 1);	
 
 	//populate the PointCloud message with static info
-	measureData.header.frame_id = "hps";
+	measureData.header.frame_id = "elp";
 	measureData.points.resize(MAX_PIX_NUM);
 
 	HPS3D_SetMeasurePacketType(DEPTH_DATA_PACKET);

@@ -20,8 +20,8 @@ vector<Pt32> leftPts, rightPts, allPts;
 void rotate(const vector<Pt32>& in, vector<Pt32>& result, double angle){
     result.resize(MAX_PIX_NUM);
     for (int i = 0; i < MAX_PIX_NUM; ++i){
-        result[i].x = - cos(angle) * in[i].x + sin(angle) * in[i].z;
-        result[i].y = sin(angle) * in[i].x + cos(angle) * in[i].z;
+        result[i].x = sin(angle) * in[i].x + cos(angle) * in[i].z;
+        result[i].y = cos(angle) * in[i].x - sin(angle) * in[i].z;
         result[i].z = in[i].y;
     }
 }
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     sensor_msgs::PointCloud2 merged;
 
     //populate the PointCloud message with static info
-    merged.header.frame_id = "hps";
+    merged.header.frame_id = "elp";
 	merged.width = 2 * RES_WIDTH;
 	merged.height = RES_HEIGHT;
 	merged.fields.resize(3); //xyz fields
